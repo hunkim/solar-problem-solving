@@ -91,14 +91,12 @@ if __name__ == "__main__":
              "Copy and paste these 20 powerful prompts to boost problem-solving" from https://x.com/HeyAbhishekk
 """)
 
-    with st.sidebar:
-        st.header(f"Add your conext such as text email or screenshots!")
 
-        context = st.text_area("Paste your context here", height=120)
-        uploaded_file = st.file_uploader(
-            "Otional: Choose your pdf or image file", type=["png", "jpeg", "jpg", "pdf"]
-        )
-        button = st.button("Let's Solve!")
+    context = st.text_area("Write your context or problems here", height=120)
+    uploaded_file = st.file_uploader(
+        "Otional: Choose your pdf or image file", type=["png", "jpeg", "jpg", "pdf"]
+    )
+    button = st.button("Let's Solve!")
 
     if button and (uploaded_file or context):
         if uploaded_file and uploaded_file.name:
@@ -119,7 +117,7 @@ if __name__ == "__main__":
 
         run_follow_up()
 
-        download_context = f"# Solar Problem Solving\n\n ## Problem \n{context}\n"
+        download_context = f"# Solar Problem Solving\n\n## Problem \n{context}\n"
         for agent, response in agent_results.items():
             download_context += f"\n\n## {agent}\n{response}\n\n"
         
