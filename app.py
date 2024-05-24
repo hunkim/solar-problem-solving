@@ -118,3 +118,14 @@ if __name__ == "__main__":
                         context += "\n\n" + str(doc)
 
         run_follow_up()
+
+        download_context = f"# Solar Problem Solving\n\n ## Problem \n{context}\n"
+        for agent, response in agent_results.items():
+            download_context += f"\n\n## {agent}\n{response}\n\n"
+        
+        st.download_button(
+            label="Download Results",
+            data=download_context,
+            file_name="solar_pc.md",
+            mime="text/markdown",
+        )
