@@ -8,7 +8,7 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_upstage import UpstageLayoutAnalysisLoader
 from langchain_core.prompts import PromptTemplate
 
-import tempfile, os, json
+import tempfile, os, base64
 
 from agents import default_agents
 from code2img import code2img
@@ -46,6 +46,8 @@ def get_agent_response(agent, context):
 def get_agent_code(agent, context, analysis_result):
     comon_instruction = """Apply the analysis technique to the context and analysis results and generate python code to generate relevent diagram.
     use matplotlib and generate executable correct code. Please think step by step and write the code.
+    All values, variable names, labels and legends should be in English and shorten them for better readability.
+    Once again, all values, variable names, labels and legends should be in English.
     Only reply with the code.
     """
     prompt_str = (
@@ -98,14 +100,15 @@ def run_follow_up():
                     place_info.success("Agent response is good!")
                     break
 
-                place_info.info("The response is no good. Writing a new response ...")
+                place_info.info("The response is not good. Let me retry ...")
             else:
                 place_info.error("Please double check the response!")
 
             # store the agent response
-            agent_results[agent["name"]] = response
+            agent_results[agent["name"]] = {"response": response}
 
         img = None
+        code = None
         with st.status(f"Diagram generation for {agent['name']} ..."):
             for i in range(5):
                 try:
@@ -120,6 +123,8 @@ def run_follow_up():
 
         if img:
             st.image(img, caption="Generated Diagram")
+            agent_results[agent["name"]]["code"] = code
+            agent_results[agent["name"]]["img"] = img
             
 
 
@@ -157,8 +162,15 @@ if __name__ == "__main__":
         run_follow_up()
 
         download_context = f"# Solar Problem Solving\n\n## Problem \n{context}\n"
-        for agent, response in agent_results.items():
+        for agent, result in agent_results.items():
+            response = result["response"]
             download_context += f"\n\n## {agent}\n{response}\n\n"
+            download_context += "### Generated Diagram\n"
+            download_context += f"\n\n{result['code']}\n\n"
+            # insert image as base64 first generate base64
+            img_base64_txt = base64.b64encode(result["img"]).decode("utf-8")
+            download_context += f"![Generated Diagram](data:image/png;base64,{img_base64_txt})\n\n"
+
 
         st.download_button(
             label="Download Results",
