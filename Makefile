@@ -15,7 +15,9 @@ $(VENV)/bin/activate: requirements.txt
 app: $(VENV)/bin/activate
 	$(STREAMLIT) run app.py
 
-
+code2img: $(VENV)/bin/activate
+	$(PYTHON) code2img.py
+	
 clean:
 	rm -rf __pycache__
 	rm -rf $(VENV)

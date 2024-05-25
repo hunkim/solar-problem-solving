@@ -11,13 +11,13 @@ from langchain_core.prompts import PromptTemplate
 import tempfile, os, json
 
 from agents import default_agents
+from code2img import code2img
 
 
 llm = Chat()
-groundedness_check = UpstageGroundednessCheck()
+groundedness_check = UpstageGroundednessCheck(use_ocr=True)
 
 agent_results = {}
-
 
 def get_agent_response(agent, context):
     comon_instruction = """Apply the analysis technique to the context. 
@@ -39,18 +39,39 @@ def get_agent_response(agent, context):
     return chain.stream(
         {
             "context": context,
-            **agent_results,
+        }
+    )
+
+
+def get_agent_code(agent, context, analysis_result):
+    comon_instruction = """Apply the analysis technique to the context and analysis results and generate python code to generate relevent diagram.
+    use matplotlib and generate executable correct code. Please think step by step and write the code.
+    Only reply with the code.
+    """
+    prompt_str = (
+        agent["instruction"]
+        + "\n"
+        + comon_instruction
+        + "\n\n---\nCONTEXT: {context} \n\n---\nANALYSIS: {analysis_result}"
+    )
+
+    for addition_context in agent.get("additional_context", []):
+        prompt_str += "\n\n---\n" + addition_context + ": {" + addition_context + "}"
+
+    prompt_template = PromptTemplate.from_template(prompt_str)
+
+    chain = prompt_template | llm | StrOutputParser()
+
+    return chain.stream(
+        {
+            "context": context,
+            "analysis_result": analysis_result,
         }
     )
 
 
 def GC_response(agent, context, response):
     instruction = agent["instruction"]
-    additional_context = agent.get("additional_context", [])
-    for addition_context in additional_context:
-        if addition_context in agent_results:
-            context += "\n\n" + agent_results[addition_context]
-
     gc_result = groundedness_check.run(
         {
             "context": f"Context:{context}\n\nInstruction{instruction}",
@@ -84,13 +105,31 @@ def run_follow_up():
             # store the agent response
             agent_results[agent["name"]] = response
 
+        img = None
+        with st.status(f"Diagram generation for {agent['name']} ..."):
+            for i in range(5):
+                try:
+                    code = st.write_stream(get_agent_code(agent, context, response))            
+                    img = code2img(code)
+                    if img:
+                        st.image(img, caption="Generated Diagram")
+                        break
+                except Exception as e:
+                    st.error(f"Error: {e}")
+                    st.warning("Please try again!")
+
+        if img:
+            st.image(img, caption="Generated Diagram")
+            
+
 
 if __name__ == "__main__":
     st.title("🌞 Solar Problem Solving")
-    st.write("""This app is insipred by 
+    st.write(
+        """This app is insipred by 
              "Copy and paste these 20 powerful prompts to boost problem-solving" from https://x.com/HeyAbhishekk
-""")
-
+"""
+    )
 
     context = st.text_area("Write your context or problems here", height=120)
     uploaded_file = st.file_uploader(
@@ -120,7 +159,7 @@ if __name__ == "__main__":
         download_context = f"# Solar Problem Solving\n\n## Problem \n{context}\n"
         for agent, response in agent_results.items():
             download_context += f"\n\n## {agent}\n{response}\n\n"
-        
+
         st.download_button(
             label="Download Results",
             data=download_context,
