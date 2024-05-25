@@ -1,16 +1,18 @@
 import requests
 import base64
 import streamlit as st
-
+import urllib
+import json
 import re
+
 
 def extract_first_code_block_from_markdown(markdown_content):
     # Define a regular expression to match code blocks in Markdown
-    code_block_pattern = r'```(?:\w+\n)?(.*?)```'
-    
+    code_block_pattern = r"```(?:\w+\n)?(.*?)```"
+
     # Use re.search to find the first code block in the Markdown content
     match = re.search(code_block_pattern, markdown_content, re.DOTALL)
-    
+
     if match:
         return match.group(1)  # Return the content of the first code block
     else:
@@ -19,7 +21,8 @@ def extract_first_code_block_from_markdown(markdown_content):
 
 def remove_show(plot_code: str):
     # remove 'plt.show()' from the code
-    return plot_code.replace('plt.show()', '')
+    return plot_code.replace("plt.show()", "")
+
 
 def code2img(markdown_content: str):
     code = extract_first_code_block_from_markdown(markdown_content)
@@ -30,8 +33,15 @@ def code2img(markdown_content: str):
 
     code = remove_show(code)
 
-    headers = {'Authorization': st.secrets['PLOT_API_KEY']}
-    response = requests.post(st.secrets['PLOT_API_URL'], data=code)
+    headers = {
+        "Authorization": st.secrets["PLOT_API_KEY"],
+        "Content-Type": "application/json",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:106.0) Gecko/20100101 Firefox/106.0",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.5",
+    }
+
+    response = requests.post(st.secrets["PLOT_API_URL"], data=code, headers=headers)
     if response.status_code == 200:
         # Get the base64-encoded image string from the response
         img_base64 = response.text
@@ -44,7 +54,7 @@ def code2img(markdown_content: str):
         return None
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     code = """
 import matplotlib.pyplot as plt
 
@@ -73,6 +83,6 @@ plt.show()
 """
     img = code2img(code)
     if img:
-        with open('plot.png', 'wb') as f:
+        with open("plot.png", "wb") as f:
             f.write(img)
         print("Image saved as plot.png")
