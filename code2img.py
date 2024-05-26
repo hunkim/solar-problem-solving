@@ -45,7 +45,7 @@ def code2img(markdown_content: str):
     url = st.secrets["PLOT_API_URL"]
     request = urllib.request.Request(url, data=data, headers=headers)
 
-    retries = 3
+    retries = 1
     backoff = 2
 
     for attempt in range(retries):

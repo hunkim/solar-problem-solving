@@ -19,6 +19,7 @@ groundedness_check = UpstageGroundednessCheck(use_ocr=True)
 
 agent_results = {}
 
+
 def get_agent_response(agent, context):
     comon_instruction = """Apply the analysis technique to the context. 
     Please reply in the language of the context.
@@ -107,12 +108,15 @@ def run_follow_up():
             # store the agent response
             agent_results[agent["name"]] = {"response": response}
 
+        place_diagram_status = st.empty()
+        place_diagram = st.empty()
+
         img = None
         code = None
-        with st.status(f"Diagram generation for {agent['name']} ..."):
+        with place_diagram_status.status(f"Diagram generation for {agent['name']} ..."):
             for i in range(5):
                 try:
-                    code = st.write_stream(get_agent_code(agent, context, response))            
+                    code = st.write_stream(get_agent_code(agent, context, response))
                     img = code2img(code)
                     if img:
                         st.image(img, caption="Generated Diagram")
@@ -122,10 +126,9 @@ def run_follow_up():
                     st.warning("Please try again!")
 
         if img:
-            st.image(img, caption="Generated Diagram")
+            place_diagram.image(img, caption="Generated Diagram")
             agent_results[agent["name"]]["code"] = code
             agent_results[agent["name"]]["img"] = img
-            
 
 
 if __name__ == "__main__":
@@ -169,8 +172,9 @@ if __name__ == "__main__":
             download_context += f"\n\n{result['code']}\n\n"
             # insert image as base64 first generate base64
             img_base64_txt = base64.b64encode(result["img"]).decode("utf-8")
-            download_context += f"![Generated Diagram](data:image/png;base64,{img_base64_txt})\n\n"
-
+            download_context += (
+                f"![Generated Diagram](data:image/png;base64,{img_base64_txt})\n\n"
+            )
 
         st.download_button(
             label="Download Results",
