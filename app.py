@@ -15,10 +15,12 @@ from code2img import code2img
 
 
 llm = Chat()
-groundedness_check = UpstageGroundednessCheck(use_ocr=True)
+groundedness_check = UpstageGroundednessCheck()
 
 agent_results = {}
 
+
+retries = 3
 
 def get_agent_response(agent, context):
     comon_instruction = """Apply the analysis technique to the context. 
@@ -45,10 +47,13 @@ def get_agent_response(agent, context):
 
 
 def get_agent_code(agent, context, analysis_result):
-    comon_instruction = """Apply the analysis technique to the context and analysis results and generate python code to generate relevent diagram.
-    use matplotlib and generate executable correct code. Please think step by step and write the code.
+    comon_instruction = """Apply the analysis technique to the context and analysis results 
+    and generate one complete python code to generate relevent diagram.
+    Use matplotlib and generate executable correct and complete code including necessary imports.
+    Please think step by step and write the code.
     All values, variable names, labels and legends should be in English and shorten them for better readability.
     Once again, all values, variable names, labels and legends should be in English.
+    Please shorten the legend and label names for better readability.
     Only reply with the code.
     """
     prompt_str = (
@@ -94,7 +99,7 @@ def run_follow_up():
         ):
             place = st.empty()
             place_info = st.empty()
-            for i in range(3):
+            for i in range(retries):
                 response = place.write_stream(get_agent_response(agent, context))
                 place_info.info(f"Checking the response. Trial {i+1} ...")
                 if GC_response(agent, context, response):
@@ -108,27 +113,27 @@ def run_follow_up():
             # store the agent response
             agent_results[agent["name"]] = {"response": response}
 
-        place_diagram_status = st.empty()
-        place_diagram = st.empty()
-
         img = None
         code = None
-        with place_diagram_status.status(f"Diagram generation for {agent['name']} ..."):
-            for i in range(5):
+        with st.status(f"Diagram generation for {agent['name']} ..."):
+            for i in range(retries):
                 try:
                     code = st.write_stream(get_agent_code(agent, context, response))
+                    st.info("Generating the diagram ...")            
                     img = code2img(code)
                     if img:
                         st.image(img, caption="Generated Diagram")
                         break
+                    st.warning("Let me retry ...")
                 except Exception as e:
                     st.error(f"Error: {e}")
                     st.warning("Please try again!")
 
         if img:
-            place_diagram.image(img, caption="Generated Diagram")
+            st.image(img, caption="Generated Diagram")
             agent_results[agent["name"]]["code"] = code
             agent_results[agent["name"]]["img"] = img
+            
 
 
 if __name__ == "__main__":
@@ -154,10 +159,10 @@ if __name__ == "__main__":
                     with open(file_path, "wb") as f:
                         f.write(uploaded_file.getvalue())
 
-                    st.write("Indexing your document...")
-                    layzer = UpstageLayoutAnalysisLoader(file_path, split="page")
+                    layzer = UpstageLayoutAnalysisLoader(file_path, split="page", use_ocr=True)
                     # For improved memory efficiency, consider using the lazy_load method to load documents page by page.
                     docs = layzer.load()  # or layzer.lazy_load()
+                    st.write(f"Loaded {len(docs)} pages from {uploaded_file.name}")
 
                     for doc in docs:
                         context += "\n\n" + str(doc)
@@ -175,6 +180,16 @@ if __name__ == "__main__":
             download_context += (
                 f"![Generated Diagram](data:image/png;base64,{img_base64_txt})\n\n"
             )
+
+            if "code" in result:    
+                download_context += "### Generated Diagram\n"
+                download_context += f"\n\n{result['code']}\n\n"
+
+            if "img" in result:    
+                # insert image as base64 first generate base64
+                img_base64_txt = base64.b64encode(result["img"]).decode("utf-8")
+                download_context += f"![Generated Diagram](data:image/png;base64,{img_base64_txt})\n\n"
+
 
         st.download_button(
             label="Download Results",
