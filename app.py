@@ -184,7 +184,10 @@ def gen_diagram(agent, response, place_digram_status, place_digram, ctx=None):
                     break
                 else:
                     st.error(img_gen_msg)
-                    st.warning("I will generate the diagram again ...")
+                    if i < retries - 1:
+                        st.warning("I will generate the diagram again ...")
+                    else:
+                        st.error("Giving up on generating the diagram!")
                 
             except Exception as e:
                 st.error(f"Error: {e}")
