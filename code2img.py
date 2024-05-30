@@ -41,38 +41,8 @@ def code2img(markdown_content: str):
         "Accept-Language": "en-US,en;q=0.5",
     }
 
-    data = json.dumps(code).encode('utf-8')
-    url = st.secrets["PLOT_API_URL"]
-    request = urllib.request.Request(url, data=data, headers=headers)
 
-    retries = 1
-    backoff = 2
-
-    for attempt in range(retries):
-        try:
-            with urllib.request.urlopen(request) as response:
-                if response.status == 200:
-                    img_base64 = response.read().decode('utf-8')
-                    print(img_base64[:100])
-                    img_data = base64.b64decode(img_base64)
-                    return img_data
-                else:
-                    print(f"Error: {response.read().decode('utf-8')}")
-                    return None
-        except urllib.error.HTTPError as e:
-            print(f"HTTPError: {e.reason}, Code: {e.code}")
-        except urllib.error.URLError as e:
-            print(f"URLError: {e.reason}")
-        except Exception as e:
-            print(f"Unexpected error: {str(e)}")
-        
-        time.sleep(backoff)
-        backoff *= 2  # Exponential backoff
-    else:
-        return None
-
-
-    response = requests.post(st.secrets["PLOT_API_URL"], data=code, headers=headers)
+    response = requests.post(st.secrets["PLOT_API_URL"], data=code, headers=headers, timeout=10)
     if response.status_code == 200:
         # Get the base64-encoded image string from the response
         img_base64 = response.text
