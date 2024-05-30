@@ -3,6 +3,8 @@
 import streamlit as st
 from streamlit.runtime.scriptrunner import add_script_run_ctx
 from streamlit.runtime.scriptrunner import get_script_run_ctx
+from langchain_mistralai.chat_models import ChatMistralAI
+
 
 from langchain_upstage import ChatUpstage as Chat
 from langchain_upstage import UpstageGroundednessCheck
@@ -21,8 +23,8 @@ import tempfile, os, base64
 from agents import default_agents
 from code2img import code2img
 
-
-llm = Chat()
+model_name = st.secrets.get("SOLAR_MODEL_NAME")
+llm = Chat(model=model_name)
 groundedness_check = UpstageGroundednessCheck()
 
 agent_results = {}
@@ -56,6 +58,8 @@ def get_agent_response(agent, context):
 
 
 def get_agent_code(agent, context, analysis_result):
+    codestral = ChatMistralAI(model="codestral-latest", endpoint="https://codestral.mistral.ai/v1")
+
     comon_instruction = """Apply the analysis technique to the context and analysis results 
     and generate one complete python code to generate relevent diagram.
     Use matplotlib and generate executable correct and complete code including necessary imports.
@@ -77,7 +81,7 @@ def get_agent_code(agent, context, analysis_result):
 
     prompt_template = PromptTemplate.from_template(prompt_str)
 
-    chain = prompt_template | llm | StrOutputParser()
+    chain = prompt_template | codestral | StrOutputParser()
 
     return chain.stream(
         {
