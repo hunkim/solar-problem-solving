@@ -103,16 +103,16 @@ def GC_response(agent, context, response):
     return gc_result.lower() == "grounded"
 
 
-def run_follow_up():
-    total_agent_count = len(default_agents)
-    for i, agent in enumerate(default_agents):
+def run_problem_solving(agents):
+    if st.secrets.get("TEST")=="true":
+        agents = agents[:2]
+
+    total_agent_count = len(agents)
+    for i, agent in enumerate(agents):
         if i == 0:
-            response = gen_analysis(total_agent_count, i, agent)
-        elif i == len(default_agents) - 1:
-            # Last case
-            gen_diagram(agent, response, place_digram_status, place_digram)
+            gen_analysis(total_agent_count, i, agent)
         else:
-            prev_agent = default_agents[i - 1]
+            prev_agent = agents[i - 1]
             prev_response = agent_results[prev_agent["name"]]["response"]
 
             place_digram_status = st.empty()
@@ -134,6 +134,12 @@ def run_follow_up():
                 #    add_script_run_ctx(t)
                 # gen_diagram(prev_agent, prev_response, place_digram_status, place_digram)
 
+    # Handle the last diagram
+    last_agent = agents[-1]
+    last_response = agent_results[last_agent["name"]]["response"]
+    place_digram_status = st.empty()
+    place_digram = st.empty()
+    gen_diagram(last_agent, last_response, place_digram_status, place_digram)
 
 def gen_analysis(total_agent_count, i, agent, ctx=None):
     if ctx:
@@ -220,7 +226,7 @@ if __name__ == "__main__":
                     for doc in docs:
                         context += "\n\n" + str(doc)
 
-        run_follow_up()
+        run_problem_solving(default_agents)
 
         download_context = f"# Solar Problem Solving\n\n## Problem \n{context}\n"
         for agent, result in agent_results.items():
