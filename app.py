@@ -36,8 +36,10 @@ retries = 3
 def get_agent_response(agent, context):
     comon_instruction = """Apply the analysis technique to the context. 
     Please reply in the language of the context.
+    For example,
     if the context is in English, reply in English.
     if the context is in Korean, reply in Korean.
+    Think step by step and generate the response thoughtfully in the language of the context.
     """
     prompt_str = (
         agent["instruction"] + "\n" + comon_instruction + "\n\n---\nCONTEXT: {context}"
