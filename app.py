@@ -104,9 +104,6 @@ def run_follow_up():
     for i, agent in enumerate(default_agents):
         if i == 0:
             response = gen_analysis(total_agent_count, i, agent)
-        elif i == len(default_agents) - 1:
-            # Last case
-            gen_diagram(agent, response, place_digram_status, place_digram)
         else:
             prev_agent = default_agents[i - 1]
             prev_response = agent_results[prev_agent["name"]]["response"]
@@ -129,7 +126,7 @@ def run_follow_up():
                 # for t in executor._threads:
                 #    add_script_run_ctx(t)
                 # gen_diagram(prev_agent, prev_response, place_digram_status, place_digram)
-
+    
 
 def gen_analysis(total_agent_count, i, agent, ctx=None):
     if ctx:
