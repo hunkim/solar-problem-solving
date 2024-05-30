@@ -38,6 +38,8 @@ if __name__ == "__main__":
     button = st.button("Let's Solve!")
 
     if button and code:
-        img = code2img(code)
+        img, msg = code2img(code)
         if img:
             st.image(img, caption="Generated Diagram")
+        else:
+            st.error(msg)

@@ -6,6 +6,7 @@ import json
 import re
 import time
 
+
 def extract_first_code_block_from_markdown(markdown_content):
     # Define a regular expression to match code blocks in Markdown
     code_block_pattern = r"```(?:\w+\n)?(.*?)```"
@@ -26,12 +27,20 @@ def remove_show(plot_code: str):
 
 def code2img(markdown_content: str):
     code = extract_first_code_block_from_markdown(markdown_content)
-    print(code)
 
     if code is None:
         code = markdown_content
 
     code = remove_show(code)
+
+    # Test code exec
+    try:
+        # Use a shared scope for exec
+        global_scope = {}
+        exec(code, global_scope)
+    except Exception as e:
+        msg = f"Error executing code: {e}"
+        return None, msg
 
     headers = {
         "Authorization": st.secrets["PLOT_API_KEY"],
@@ -41,18 +50,19 @@ def code2img(markdown_content: str):
         "Accept-Language": "en-US,en;q=0.5",
     }
 
-
-    response = requests.post(st.secrets["PLOT_API_URL"], data=code, headers=headers, timeout=10)
+    response = requests.post(
+        st.secrets["PLOT_API_URL"], data=code, headers=headers, timeout=10
+    )
     if response.status_code == 200:
         # Get the base64-encoded image string from the response
         img_base64 = response.text
         print(img_base64[:100])
         # Decode the base64-encoded image string to obtain binary data
         img_data = base64.b64decode(img_base64)
-        return img_data
+        return img_data, "Image generated successfully!"
     else:
-        print(f"Error: {response.text}")
-        return None
+        msg = f"Error: {response.text}"
+        return None, msg
 
 
 if __name__ == "__main__":

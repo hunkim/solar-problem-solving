@@ -1,3 +1,4 @@
 streamlit
 langchain-upstage
 langchain-mistralai
+matplotlib

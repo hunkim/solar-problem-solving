@@ -178,11 +178,14 @@ def gen_diagram(agent, response, place_digram_status, place_digram, ctx=None):
             try:
                 code = st.write_stream(get_agent_code(agent, context, response))
                 st.info("Generating the diagram ...")
-                img = code2img(code)
+                img, img_gen_msg = code2img(code)
                 if img:
                     st.image(img, caption="Generated Diagram")
                     break
-                st.warning("Let me retry ...")
+                else:
+                    st.error(img_gen_msg)
+                    st.warning("I will generate the diagram again ...")
+                
             except Exception as e:
                 st.error(f"Error: {e}")
                 st.warning("Please try again!")
