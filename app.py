@@ -202,10 +202,17 @@ def gen_diagram(agent, response, place_digram_status, place_digram, ctx=None):
 if __name__ == "__main__":
     st.title("🌞 Solar Problem Solving")
     st.write(
-        """This app is insipred by 
-             "Copy and paste these 20 powerful prompts to boost problem-solving" from https://x.com/HeyAbhishekk
+        """This app helps you solve problems using [SolarLLM](https://console.upstage.ai) and codestral models inspired by
+             20 powerful prompts to boost problem-solving from https://x.com/HeyAbhishekk. 
+             It could be quite random, but fun and give you new perspectives.
 """
     )
+
+    st.write(
+        """##### Analysis Result Examples
+* [GPT4o Sky Voice](https://x.com/HeyAbhishekk)
+* [Yann LeCun's Papers and Elon Musk's Tweet:](https://x.com/HeyAbhishekk)
+        """)
 
     context = st.text_area("Write your context or problems here", height=120)
     uploaded_file = st.file_uploader(
