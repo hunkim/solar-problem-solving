@@ -219,7 +219,7 @@ if __name__ == "__main__":
         """##### Analysis Result Examples
 * [GPT4o Sky Voice](https://jumpshare.com/v/F72QlKztCThNtdWVTY8A)
 * [Yann LeCun's Papers and Elon Musk's Tweet:](https://jumpshare.com/v/4fkisGmb4TAAftQHHjmt)
-* [Milvus Lite Update] (https://jumpshare.com/v/lXrsA5m2FRRvvhDQnizL)
+* [Milvus Lite Update](https://jumpshare.com/v/lXrsA5m2FRRvvhDQnizL)
         """)
 
     context = st.text_area("Write your context or problems here", height=120)
