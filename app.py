@@ -212,8 +212,8 @@ if __name__ == "__main__":
 
     st.write(
         """##### Analysis Result Examples
-* [GPT4o Sky Voice](https://x.com/HeyAbhishekk)
-* [Yann LeCun's Papers and Elon Musk's Tweet:](https://x.com/HeyAbhishekk)
+* [GPT4o Sky Voice](https://jumpshare.com/v/F72QlKztCThNtdWVTY8A)
+* [Yann LeCun's Papers and Elon Musk's Tweet:](https://jumpshare.com/v/4fkisGmb4TAAftQHHjmt)
         """)
 
     context = st.text_area("Write your context or problems here", height=120)
