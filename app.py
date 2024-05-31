@@ -202,6 +202,11 @@ def gen_diagram(agent, response, place_digram_status, place_digram, ctx=None):
 
 
 if __name__ == "__main__":
+    st.set_page_config(
+        page_title="Solar Problem Solving",
+        page_icon="🌞",
+        layout="wide",
+    )
     st.title("🌞 Solar Problem Solving")
     st.write(
         """This app helps you solve problems using [SolarLLM](https://console.upstage.ai) and codestral models inspired by
